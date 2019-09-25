@@ -8,7 +8,7 @@ import io.grpc.ManagedChannelBuilder;
 public final class CreateUserClient {
   public static void main(String[] args) throws Exception {
     final ManagedChannel channel =
-        ManagedChannelBuilder.forTarget("localhost:8080").usePlaintext(true).build();
+        ManagedChannelBuilder.forTarget("localhost:8080").usePlaintext().build();
     UserServiceGrpc.UserServiceBlockingStub stub = UserServiceGrpc.newBlockingStub(channel);
     ImageHub.CreateUserRequest request =
         ImageHub.CreateUserRequest.newBuilder().setEmail("example@gmail.com").build();

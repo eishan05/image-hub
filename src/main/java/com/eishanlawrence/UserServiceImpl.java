@@ -25,20 +25,24 @@ public final class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
       ImageHub.CreateUserRequest request,
       StreamObserver<ImageHub.CreateUserResponse> responseObserver) {
     String email = request.getEmail();
-    String apiKey = Utilities.getRandomString();
     Firestore db = FirestoreDatabaseReference.getFirestoreReference();
-    // Create a document
     DocumentReference documentReference = db.collection(USERS_COLLECTION_ID).document(email);
-    ImageHub.CreateUserResponse response = getCreateUserResponse(documentReference.get());
+    ImageHub.CreateUserResponse response = getCreateUserResponse(documentReference);
     if (response.getSuccess()) {
-      updateDatabase(documentReference, email, response);
+      addToDatabase(documentReference, email, response);
     }
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 
+  @Override
+  public void deleteUser(
+          ImageHub.DeleteUserRequest request,
+          StreamObserver<ImageHub.DeleteUserResponse> responseObserver) {}
+
   private static ImageHub.CreateUserResponse getCreateUserResponse(
-      final ApiFuture<DocumentSnapshot> documentFuture) {
+      final DocumentReference documentReference) {
+    final ApiFuture<DocumentSnapshot> documentFuture = documentReference.get();
     final ImageHub.CreateUserResponse.Builder builder = ImageHub.CreateUserResponse.newBuilder();
     try {
       if (documentSnapshotExists(documentFuture)) {
@@ -54,7 +58,7 @@ public final class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
     return builder.build();
   }
 
-  private static void updateDatabase(
+  private static void addToDatabase(
       DocumentReference reference, String email, ImageHub.CreateUserResponse response) {
     Map<String, Object> data = new HashMap<String, Object>();
     ImageHub.User user =
@@ -80,9 +84,4 @@ public final class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
     DocumentSnapshot snapshot = documentFuture.get();
     return snapshot.exists();
   }
-
-  @Override
-  public void deleteUser(
-      ImageHub.DeleteUserRequest request,
-      StreamObserver<ImageHub.DeleteUserResponse> responseObserver) {}
 }
