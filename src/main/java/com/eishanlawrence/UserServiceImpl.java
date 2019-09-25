@@ -3,15 +3,12 @@ package com.eishanlawrence;
 import com.eishanlawrence.firestore.FirestoreDatabaseReference;
 import com.eishanlawrence.utils.Utilities;
 import com.google.api.core.ApiFuture;
-import com.google.api.core.ApiFutureToListenableFuture;
 import com.google.cloud.firestore.Blob;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 import io.grpc.stub.StreamObserver;
-import org.apache.commons.lang3.concurrent.ConcurrentException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
