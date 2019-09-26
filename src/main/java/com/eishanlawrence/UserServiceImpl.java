@@ -1,12 +1,10 @@
 package com.eishanlawrence;
 
 import com.eishanlawrence.firestore.FirestoreDatabaseReference;
+import com.eishanlawrence.firestore.FirestoreUtils;
 import com.eishanlawrence.utils.Utilities;
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.Blob;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.*;
 import com.google.protobuf.Timestamp;
 import io.grpc.stub.StreamObserver;
 
@@ -19,6 +17,8 @@ import java.util.concurrent.ExecutionException;
 public final class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
 
   private static final String USERS_COLLECTION_ID = "users";
+  private static final String IMAGE_COLLECTION_ID = "images";
+  private static final int DEFAULT_DELETION_BATCH = 10;
 
   @Override
   public void createUser(
@@ -37,8 +37,35 @@ public final class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
 
   @Override
   public void deleteUser(
-          ImageHub.DeleteUserRequest request,
-          StreamObserver<ImageHub.DeleteUserResponse> responseObserver) {}
+      ImageHub.DeleteUserRequest request,
+      StreamObserver<ImageHub.DeleteUserResponse> responseObserver) {
+    String email = request.getEmail();
+    Firestore db = FirestoreDatabaseReference.getFirestoreReference();
+    DocumentReference documentReference = db.collection(USERS_COLLECTION_ID).document(email);
+    ImageHub.DeleteUserResponse response = getDeleteUserResponse(documentReference, request);
+    if (response.getSuccess()) {
+      deleteFromDatabase(documentReference);
+    }
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
+  }
+
+  private static ImageHub.DeleteUserResponse getDeleteUserResponse(
+      final DocumentReference documentReference, ImageHub.DeleteUserRequest request) {
+    final ApiFuture<DocumentSnapshot> documentFuture = documentReference.get();
+    final ImageHub.DeleteUserResponse.Builder builder = ImageHub.DeleteUserResponse.newBuilder();
+    try {
+      DocumentSnapshot snapshot = documentFuture.get();
+      if (snapshot.exists()
+          && FirestoreUtils.authenticateUser(snapshot, request.getApiKey().getValue())) {
+        builder.setSuccess(true);
+        deleteFromDatabase(documentReference);
+      }
+    } catch (Exception e) {
+      builder.setSuccess(false);
+    }
+    return builder.build();
+  }
 
   private static ImageHub.CreateUserResponse getCreateUserResponse(
       final DocumentReference documentReference) {
@@ -56,6 +83,12 @@ public final class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
       builder.setSuccess(false);
     }
     return builder.build();
+  }
+
+  private static void deleteFromDatabase(DocumentReference documentReference) {
+    CollectionReference collectionReference = documentReference.collection(IMAGE_COLLECTION_ID);
+    FirestoreUtils.deleteCollection(collectionReference, DEFAULT_DELETION_BATCH);
+    documentReference.delete();
   }
 
   private static void addToDatabase(
