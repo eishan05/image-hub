@@ -12,6 +12,9 @@ import java.util.concurrent.ExecutionException;
 
 public final class FirestoreUtils {
 
+  public static final String USERS_COLLECTION_ID = "users";
+  public static final String IMAGE_COLLECTION_ID = "images";
+  public static final int DEFAULT_DELETION_BATCH = 10;
   /**
    * Delete a collection in batches to avoid out-of-memory errors. Batch size may be tuned based on
    * document size (atmost 1MB) and application requirements.
@@ -38,6 +41,7 @@ public final class FirestoreUtils {
 
   /**
    * Authenticates a user given their document in the database and the authKey provided by them
+   *
    * @param documentSnapshot User's document in Firestore
    * @param authKeyByUser AuthKey provided by the user
    * @return true if the user's authKey matches that in the database
@@ -50,10 +54,11 @@ public final class FirestoreUtils {
 
   /**
    * Given a documentFuture, it checks if the document exists in the database
+   *
    * @return true if document exists, false otherwise
    */
   public static boolean documentSnapshotExists(final ApiFuture<DocumentSnapshot> documentFuture)
-          throws InterruptedException, ExecutionException {
+      throws InterruptedException, ExecutionException {
     DocumentSnapshot snapshot = documentFuture.get();
     return snapshot.exists();
   }

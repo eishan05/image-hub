@@ -7,17 +7,10 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.protobuf.Timestamp;
 import io.grpc.stub.StreamObserver;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
-
-  private static final String USERS_COLLECTION_ID = "users";
-  private static final String IMAGE_COLLECTION_ID = "images";
-  private static final int DEFAULT_DELETION_BATCH = 10;
 
   @Override
   public void createUser(
@@ -25,7 +18,8 @@ public final class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
       StreamObserver<ImageHub.CreateUserResponse> responseObserver) {
     String email = request.getEmail();
     Firestore db = FirestoreDatabaseReference.getFirestoreReference();
-    DocumentReference documentReference = db.collection(USERS_COLLECTION_ID).document(email);
+    DocumentReference documentReference =
+        db.collection(FirestoreUtils.USERS_COLLECTION_ID).document(email);
     ImageHub.CreateUserResponse response = getCreateUserResponse(documentReference);
     if (response.getSuccess()) {
       addToDatabase(documentReference, email, response);
@@ -40,7 +34,8 @@ public final class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
       StreamObserver<ImageHub.DeleteUserResponse> responseObserver) {
     String email = request.getEmail();
     Firestore db = FirestoreDatabaseReference.getFirestoreReference();
-    DocumentReference documentReference = db.collection(USERS_COLLECTION_ID).document(email);
+    DocumentReference documentReference =
+        db.collection(FirestoreUtils.USERS_COLLECTION_ID).document(email);
     ImageHub.DeleteUserResponse response = getDeleteUserResponse(documentReference, request);
     if (response.getSuccess()) {
       deleteFromDatabase(documentReference);
@@ -85,8 +80,9 @@ public final class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
   }
 
   private static void deleteFromDatabase(DocumentReference documentReference) {
-    CollectionReference collectionReference = documentReference.collection(IMAGE_COLLECTION_ID);
-    FirestoreUtils.deleteCollection(collectionReference, DEFAULT_DELETION_BATCH);
+    CollectionReference collectionReference =
+        documentReference.collection(FirestoreUtils.IMAGE_COLLECTION_ID);
+    FirestoreUtils.deleteCollection(collectionReference, FirestoreUtils.DEFAULT_DELETION_BATCH);
     documentReference.delete();
   }
 
@@ -100,13 +96,7 @@ public final class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
             .setCreateDate(Timestamp.newBuilder().setSeconds(System.currentTimeMillis() / 1000))
             .setRole(ImageHub.Role.USER)
             .build();
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    try {
-      user.writeTo(outputStream);
-    } catch (IOException e) {
-      throw new RuntimeException("Cannot write protobuf", e);
-    }
-    data.put("UserProtoBuf", Blob.fromBytes(outputStream.toByteArray()));
+    data.put("UserProtoBuf", Blob.fromBytes(user.toByteArray()));
     data.put("ApiKey", response.getApiKey().getValue());
     reference.set(data);
   }
