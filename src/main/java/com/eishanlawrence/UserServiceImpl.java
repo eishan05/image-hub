@@ -12,7 +12,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 public final class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
 
@@ -72,7 +71,7 @@ public final class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
     final ApiFuture<DocumentSnapshot> documentFuture = documentReference.get();
     final ImageHub.CreateUserResponse.Builder builder = ImageHub.CreateUserResponse.newBuilder();
     try {
-      if (documentSnapshotExists(documentFuture)) {
+      if (FirestoreUtils.documentSnapshotExists(documentFuture)) {
         builder.setSuccess(false);
       } else {
         builder.setSuccess(true);
@@ -110,11 +109,5 @@ public final class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
     data.put("UserProtoBuf", Blob.fromBytes(outputStream.toByteArray()));
     data.put("ApiKey", response.getApiKey().getValue());
     reference.set(data);
-  }
-
-  private static boolean documentSnapshotExists(final ApiFuture<DocumentSnapshot> documentFuture)
-      throws InterruptedException, ExecutionException {
-    DocumentSnapshot snapshot = documentFuture.get();
-    return snapshot.exists();
   }
 }

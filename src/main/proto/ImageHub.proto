@@ -80,7 +80,8 @@ service ImageService {
 
 message UploadImageRequest {
     ImageUrl image = 1;
-    AuthKey apiKey = 2;
+    string email = 2;
+    AuthKey apiKey = 3;
 }
 
 message UploadImageResponse {
@@ -97,7 +98,9 @@ message GetImagesResponse {
 }
 
 message DeleteImageRequest {
-    ImageUrl image = 1;
+    string email = 1;
+    AuthKey apiKey = 2;
+    ImageUrl image = 3;
 }
 
 message DeleteImageResponse {

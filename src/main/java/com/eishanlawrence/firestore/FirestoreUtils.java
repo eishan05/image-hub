@@ -8,6 +8,7 @@ import com.google.cloud.firestore.QuerySnapshot;
 import com.google.common.base.Preconditions;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public final class FirestoreUtils {
 
@@ -45,6 +46,16 @@ public final class FirestoreUtils {
     Preconditions.checkNotNull(authKeyByUser);
     String authKeyInDatabase = (String) documentSnapshot.get("ApiKey");
     return authKeyInDatabase.equals(authKeyByUser);
+  }
+
+  /**
+   * Given a documentFuture, it checks if the document exists in the database
+   * @return true if document exists, false otherwise
+   */
+  public static boolean documentSnapshotExists(final ApiFuture<DocumentSnapshot> documentFuture)
+          throws InterruptedException, ExecutionException {
+    DocumentSnapshot snapshot = documentFuture.get();
+    return snapshot.exists();
   }
 
   private FirestoreUtils() {}
