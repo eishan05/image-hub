@@ -70,7 +70,7 @@ message DeleteUserResponse {
 }
 
 service ImageService {
-    // Will fail if the user tries to upload a photo with already existing name
+    // Will fail if the user does not exist, authentication fails, or there are errors in getting image from url
     rpc UploadImage(UploadImageRequest) returns (UploadImageResponse) {}
     // Will fail if the user does not exist, or authentication fails
     rpc GetImages(GetImagesRequest) returns (GetImagesResponse) {}
@@ -80,7 +80,8 @@ service ImageService {
 
 message UploadImageRequest {
     ImageUrl image = 1;
-    AuthKey apiKey = 2;
+    string email = 2;
+    AuthKey apiKey = 3;
 }
 
 message UploadImageResponse {
@@ -97,7 +98,9 @@ message GetImagesResponse {
 }
 
 message DeleteImageRequest {
-    ImageUrl image = 1;
+    string email = 1;
+    AuthKey apiKey = 2;
+    ImageUrl image = 3;
 }
 
 message DeleteImageResponse {
