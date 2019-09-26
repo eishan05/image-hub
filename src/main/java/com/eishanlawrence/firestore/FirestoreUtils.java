@@ -1,10 +1,7 @@
 package com.eishanlawrence.firestore;
 
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
-import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.*;
 import com.google.common.base.Preconditions;
 
 import java.util.List;
@@ -37,6 +34,19 @@ public final class FirestoreUtils {
     } catch (Exception e) {
       System.err.println("Error deleting collection : " + e.getMessage());
     }
+  }
+
+  /**
+   * @param documentReference User's document in Firestore
+   * @param authKeyByUser AuthKey provided by the user
+   * @return true if the user exists and their AuthKey is correct
+   */
+  public static boolean userExistsAndIsAuthenticated(
+      DocumentReference documentReference, String authKeyByUser)
+      throws InterruptedException, ExecutionException {
+    ApiFuture<DocumentSnapshot> documentFuture = documentReference.get();
+    DocumentSnapshot snapshot = documentFuture.get();
+    return snapshot.exists() && authenticateUser(snapshot, authKeyByUser);
   }
 
   /**

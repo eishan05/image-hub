@@ -28,15 +28,13 @@ public final class ImageServiceImpl extends ImageServiceGrpc.ImageServiceImplBas
     DocumentReference documentReference =
         db.collection(FirestoreUtils.USERS_COLLECTION_ID).document(email);
     ApiFuture<DocumentSnapshot> documentFuture = documentReference.get();
-    System.out.println("Got an image upload request!");
     try {
       DocumentSnapshot snapshot = documentFuture.get();
-      // If the user does not exist, or sends in a wrong AuthKey
-      if (!snapshot.exists() || !FirestoreUtils.authenticateUser(snapshot, authKey)) {
-        responseObserver.onNext(failingResponse);
-      } else {
+      if (FirestoreUtils.userExistsAndIsAuthenticated(documentReference, authKey)) {
         uploadImageToDatabase(documentReference, request);
         responseObserver.onNext(ImageHub.UploadImageResponse.newBuilder().setSuccess(true).build());
+      } else {
+        responseObserver.onNext(failingResponse);
       }
     } catch (Exception e) {
       e.printStackTrace();
