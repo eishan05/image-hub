@@ -35,6 +35,12 @@ public final class FirestoreUtils {
     }
   }
 
+  /**
+   * Authenticates a user given their document in the database and the authKey provided by them
+   * @param documentSnapshot User's document in Firestore
+   * @param authKeyByUser AuthKey provided by the user
+   * @return true if the user's authKey matches that in the database
+   */
   public static boolean authenticateUser(DocumentSnapshot documentSnapshot, String authKeyByUser) {
     Preconditions.checkNotNull(authKeyByUser);
     String authKeyInDatabase = (String) documentSnapshot.get("ApiKey");
