@@ -11,7 +11,7 @@ public final class CreateUserClient {
         ManagedChannelBuilder.forTarget("localhost:8080").usePlaintext().build();
     UserServiceGrpc.UserServiceBlockingStub stub = UserServiceGrpc.newBlockingStub(channel);
     ImageHub.CreateUserRequest request =
-        ImageHub.CreateUserRequest.newBuilder().setEmail("example@gmail.com").build();
+        ImageHub.CreateUserRequest.newBuilder().setEmail(args[0]).build();
     System.out.println("Sending a request!");
     ImageHub.CreateUserResponse response = stub.createUser(request);
     System.out.println("success is: " + response.getSuccess());

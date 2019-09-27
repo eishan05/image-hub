@@ -20,13 +20,9 @@ public final class UploadImageClient {
     System.out.println("Now sending request to upload image");
     ImageHub.UploadImageRequest request =
         ImageHub.UploadImageRequest.newBuilder()
-            .setApiKey(ImageHub.AuthKey.newBuilder().setValue("8KHYc4Yetx8YLDQ42l7O").build())
-            .setEmail(EMAIL)
-            .setImage(
-                ImageHub.ImageUrl.newBuilder()
-                    .setImageName("Mad Scientist")
-                    .setUrl(IMAGE_URL)
-                    .build())
+            .setApiKey(ImageHub.AuthKey.newBuilder().setValue(args[1]).build())
+            .setEmail(args[0])
+            .setImage(ImageHub.ImageUrl.newBuilder().setImageName(args[2]).setUrl(args[3]).build())
             .build();
     ImageHub.UploadImageResponse response = imageStub.uploadImage(request);
     System.out.println("success is: " + response.getSuccess());

@@ -16,16 +16,12 @@ public final class DeleteImageClient {
         ManagedChannelBuilder.forTarget("localhost:8080").usePlaintext().build();
     // Create one stub for uploading image, and one stub for creating a user
     ImageServiceGrpc.ImageServiceBlockingStub imageStub = ImageServiceGrpc.newBlockingStub(channel);
-    System.out.println("Now sending request to upload image");
+    System.out.println("Now sending request to delete image");
     ImageHub.DeleteImageRequest request =
         ImageHub.DeleteImageRequest.newBuilder()
-            .setApiKey(ImageHub.AuthKey.newBuilder().setValue("8KHYc4Yetx8YLDQ42l7O").build())
-            .setEmail(EMAIL)
-            .setImage(
-                ImageHub.ImageUrl.newBuilder()
-                    .setImageName("Mad Scientist")
-                    .setUrl(IMAGE_URL)
-                    .build())
+            .setApiKey(ImageHub.AuthKey.newBuilder().setValue(args[1]).build())
+            .setEmail(args[0])
+            .setImage(ImageHub.ImageUrl.newBuilder().setImageName(args[2]).setUrl(args[3]).build())
             .build();
     ImageHub.DeleteImageResponse response = imageStub.deleteImage(request);
     System.out.println("success is: " + response.getSuccess());
