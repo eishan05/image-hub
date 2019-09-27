@@ -9,15 +9,18 @@ import io.grpc.stub.StreamObserver;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public final class ImageServiceImpl extends ImageServiceGrpc.ImageServiceImplBase {
 
   private static final ImageHub.UploadImageResponse failingUploadImageResponse =
-      ImageHub.UploadImageResponse.newBuilder().setSuccess(false).build();
+      ImageHub.UploadImageResponse.getDefaultInstance();
   private static final ImageHub.DeleteImageResponse failingDeleteImageResponse =
-      ImageHub.DeleteImageResponse.newBuilder().setSuccess(false).build();
+      ImageHub.DeleteImageResponse.getDefaultInstance();
+  private static final ImageHub.GetImagesResponse failingGetImagesResponse =
+      ImageHub.GetImagesResponse.getDefaultInstance();
 
   @Override
   public void uploadImage(
@@ -74,6 +77,41 @@ public final class ImageServiceImpl extends ImageServiceGrpc.ImageServiceImplBas
     streamObserver.onCompleted();
   }
 
+  @Override
+  public void getImages(
+      ImageHub.GetImagesRequest request,
+      StreamObserver<ImageHub.GetImagesResponse> streamObserver) {
+    Firestore db = FirestoreDatabaseReference.getFirestoreReference();
+    String email = request.getEmail();
+    String authKey = request.getApiKey().getValue();
+    DocumentReference documentReference =
+        db.collection(FirestoreUtils.USERS_COLLECTION_ID).document(email);
+    try {
+      if (FirestoreUtils.userExistsAndIsAuthenticated(documentReference, authKey)) {
+        streamObserver.onNext(getImages(documentReference));
+      } else {
+        streamObserver.onNext(failingGetImagesResponse);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      streamObserver.onNext(failingGetImagesResponse);
+    }
+    streamObserver.onCompleted();
+  }
+
+  private static ImageHub.GetImagesResponse getImages(DocumentReference userReference)
+      throws InterruptedException, ExecutionException, IOException {
+    CollectionReference images = userReference.collection(FirestoreUtils.IMAGE_COLLECTION_ID);
+    ApiFuture<QuerySnapshot> future = images.get();
+    List<QueryDocumentSnapshot> imageDocuments = future.get().getDocuments();
+    ImageHub.GetImagesResponse.Builder builder = ImageHub.GetImagesResponse.newBuilder();
+    for (QueryDocumentSnapshot imageSnapshot : imageDocuments) {
+      String imageUrl = (String) imageSnapshot.get("url");
+      builder.addRawImage(ImageUtilities.urlToImageProto(imageUrl));
+    }
+    return builder.build();
+  }
+
   private static boolean findImageAndDelete(DocumentReference userDocument, ImageHub.ImageUrl image)
       throws InterruptedException, ExecutionException {
     ApiFuture<WriteResult> future =
@@ -91,6 +129,7 @@ public final class ImageServiceImpl extends ImageServiceGrpc.ImageServiceImplBas
     Map<String, Object> data = new HashMap<String, Object>();
     Map<String, Object> dimensions = new HashMap<String, Object>();
     data.put("name", request.getImage().getImageName());
+    data.put("url", request.getImage().getUrl());
     dimensions.put("height", image.getHeight());
     dimensions.put("width", image.getWidth());
     data.put("dimensions", dimensions);
