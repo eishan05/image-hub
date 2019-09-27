@@ -43,9 +43,11 @@ message AuthKey {
 
 service UserService {
     // Will fail if the user is already present
-    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+    rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {
+    }
     // Will fail if the user is not present
-    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {}
+    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse) {
+    }
 }
 
 // Request to create a user
@@ -71,11 +73,14 @@ message DeleteUserResponse {
 
 service ImageService {
     // Will fail if the user does not exist, authentication fails, or there are errors in getting image from url
-    rpc UploadImage(UploadImageRequest) returns (UploadImageResponse) {}
+    rpc UploadImage (UploadImageRequest) returns (UploadImageResponse) {
+    }
     // Will fail if the user does not exist, or authentication fails
-    rpc GetImages(GetImagesRequest) returns (GetImagesResponse) {}
+    rpc GetImages (GetImagesRequest) returns (GetImagesResponse) {
+    }
     // Will fail if the user does not exist, or authentication fails
-    rpc DeleteImage(DeleteImageRequest) returns (DeleteImageResponse) {}
+    rpc DeleteImage (DeleteImageRequest) returns (DeleteImageResponse) {
+    }
 }
 
 message UploadImageRequest {

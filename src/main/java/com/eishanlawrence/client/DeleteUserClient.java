@@ -13,8 +13,8 @@ public final class DeleteUserClient {
     UserServiceGrpc.UserServiceBlockingStub stub = UserServiceGrpc.newBlockingStub(channel);
     ImageHub.DeleteUserRequest request =
         ImageHub.DeleteUserRequest.newBuilder()
-            .setEmail(args[0])
-            .setApiKey(ImageHub.AuthKey.newBuilder().setValue(args[1]).build())
+            .setEmail("eishanlawrence5@gmail.com")
+            .setApiKey(ImageHub.AuthKey.newBuilder().setValue("test").build())
             .build();
     System.out.println("Sending a request!");
     ImageHub.DeleteUserResponse response = stub.deleteUser(request);

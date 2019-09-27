@@ -49,9 +49,8 @@ public final class UserServiceImpl extends UserServiceGrpc.UserServiceImplBase {
     final ApiFuture<DocumentSnapshot> documentFuture = documentReference.get();
     final ImageHub.DeleteUserResponse.Builder builder = ImageHub.DeleteUserResponse.newBuilder();
     try {
-      DocumentSnapshot snapshot = documentFuture.get();
-      if (snapshot.exists()
-          && FirestoreUtils.authenticateUser(snapshot, request.getApiKey().getValue())) {
+      if (FirestoreUtils.userExistsAndIsAuthenticated(
+          documentReference, request.getApiKey().getValue())) {
         builder.setSuccess(true);
         deleteFromDatabase(documentReference);
       }
